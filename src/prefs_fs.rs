@@ -51,7 +51,9 @@ impl Preferences {
     #[cfg(target_os = "android")]
     pub fn new_from_android_app(android_app: &AndroidApp) -> Self {
         // The app name is already in the path, and it's only accessible from this android app.
-        let base_path = android_app.internal_data_path()?.map(|path| path.join("prefs"));
+        let base_path = android_app
+            .internal_data_path()
+            .map(|path| path.join("prefs"));
         Self {
             base_path,
             files: HashMap::default(),
