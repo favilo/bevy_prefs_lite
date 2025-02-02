@@ -7,6 +7,9 @@ use directories::BaseDirs;
 pub use crate::prefs_toml::PreferencesFile;
 use crate::prefs_toml::{load_toml_file, serialize_table};
 
+#[cfg(target_os = "android")]
+use android_activity::AndroidApp;
+
 /// Resource which represents the place where preferences files are stored. This can be either
 /// a filesystem directory (when working on a desktop platform) or a virtual directory such
 /// as web LocalStorage.
@@ -30,6 +33,7 @@ impl Preferences {
     ///
     ///   This is only used on desktop platforms. On web platforms, the name is ignored.
     ///
+    #[cfg(not(target_os = "android"))]
     pub fn new(app_name: &str) -> Self {
         Self {
             base_path: if let Some(base_dirs) = BaseDirs::new() {
@@ -40,6 +44,16 @@ impl Preferences {
                 warn!("Could not find user configuration directories");
                 None
             },
+            files: HashMap::default(),
+        }
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn new_from_android_app(android_app: &AndroidApp) -> Option<Self> {
+        // The app name is already in the path, and it's only accessible from this android app.
+        let base_path = android_app.internal_data_path()?.join("prefs");
+        Self {
+            base_path,
             files: HashMap::default(),
         }
     }
